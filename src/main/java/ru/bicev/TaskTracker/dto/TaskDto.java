@@ -14,6 +14,8 @@ public class TaskDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long id;
 
+    private Long userId;
+
     @NotEmpty
     private String title;
 
