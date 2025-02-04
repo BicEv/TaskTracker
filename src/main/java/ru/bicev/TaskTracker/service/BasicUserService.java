@@ -48,7 +48,7 @@ public class BasicUserService implements UserService {
         User currentUser = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("Current user not found"));
 
-        if (!currentUser.getId().equals(user.getId()) && currentUser.getRole() != Role.ADMIN) {
+        if (!validateUserAccess(currentUser, userId)) {
             throw new AccessDeniedException("You are not allowed to delete this user");
         }
 
@@ -77,7 +77,7 @@ public class BasicUserService implements UserService {
         User currentUser = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("Current user not found"));
 
-        if (!currentUser.getId().equals(user.getId()) && currentUser.getRole() != Role.ADMIN) {
+        if (!validateUserAccess(currentUser, userId)) {
             throw new AccessDeniedException("You are not allowed to edit this user");
         }
         if (userDto.getPassword() != null) {
@@ -89,6 +89,10 @@ public class BasicUserService implements UserService {
         user.setRole(Role.fromString(userDto.getRole()));
         User updatedUser = userRepository.save(user);
         return UserMapper.fromEntity(updatedUser);
+    }
+
+    private boolean validateUserAccess(User currentUser, Long taskUserId) {
+        return currentUser.getId().equals(taskUserId) || currentUser.getRole() == Role.ADMIN;
     }
 
 }

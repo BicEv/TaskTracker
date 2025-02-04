@@ -43,7 +43,7 @@ public class BasicTaskService implements TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " is not found"));
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        if (!task.getUser().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+        if (!validateUserAccess(user, task)) {
             throw new AccessDeniedException("You are not allowed to delete this task");
         }
         taskRepository.deleteById(taskId);
@@ -64,7 +64,7 @@ public class BasicTaskService implements TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " is not found"));
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        if (!task.getUser().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+        if (!validateUserAccess(user, task)) {
             throw new AccessDeniedException("You are not allowed to edit this task");
         }
 
@@ -85,6 +85,10 @@ public class BasicTaskService implements TaskService {
                 .map(TaskMapper::fromEntity)
                 .collect(Collectors.toList());
 
+    }
+
+    private boolean validateUserAccess(User currentUser, Task task) {
+        return currentUser.getId().equals(task.getUser().getId()) || currentUser.getRole() == Role.ADMIN;
     }
 
 }
