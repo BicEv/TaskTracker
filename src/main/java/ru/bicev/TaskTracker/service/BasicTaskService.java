@@ -13,6 +13,7 @@ import ru.bicev.TaskTracker.entity.Task;
 import ru.bicev.TaskTracker.entity.User;
 import ru.bicev.TaskTracker.repo.TaskRepository;
 import ru.bicev.TaskTracker.repo.UserRepository;
+import ru.bicev.TaskTracker.util.Role;
 import ru.bicev.TaskTracker.util.TaskMapper;
 import ru.bicev.TaskTracker.util.TaskStatus;
 
@@ -37,9 +38,13 @@ public class BasicTaskService implements TaskService {
 
     @Transactional
     @Override
-    public void deleteTask(Long taskId) {
-        if (!taskRepository.existsById(taskId)) {
-            throw new TaskNotFoundException("Task with id " + taskId + " is not found");
+    public void deleteTask(Long taskId, Principal principal) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " is not found"));
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (!task.getUser().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("You are not allowed to delete this task");
         }
         taskRepository.deleteById(taskId);
 
@@ -54,9 +59,15 @@ public class BasicTaskService implements TaskService {
 
     @Transactional
     @Override
-    public TaskDto updateTask(Long taskId, TaskDto taskDto) {
+    public TaskDto updateTask(Long taskId, TaskDto taskDto, Principal principal) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " is not found"));
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (!task.getUser().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+            throw new AccessDeniedException("You are not allowed to edit this task");
+        }
+
         task.setTitle(taskDto.getTitle());
         task.setDescription(taskDto.getDescription());
         task.setCreatedAt(taskDto.getCreatedAt());

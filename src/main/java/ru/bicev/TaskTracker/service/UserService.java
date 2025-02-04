@@ -1,5 +1,7 @@
 package ru.bicev.TaskTracker.service;
 
+import java.security.Principal;
+
 import ru.bicev.TaskTracker.dto.UserDto;
 
 public interface UserService {
@@ -8,9 +10,9 @@ public interface UserService {
 
     UserDto getUserById(Long userId);
 
-    UserDto updateUser(Long userId, UserDto userDto);
+    UserDto updateUser(Long userId, UserDto userDto, Principal principal);
 
-    void deleteUser(Long userId);
+    void deleteUser(Long userId, Principal principal);
 
     UserDto getUserByUsername(String username);
 
