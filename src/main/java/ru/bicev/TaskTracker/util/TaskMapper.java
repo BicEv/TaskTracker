@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.bicev.TaskTracker.dto.TaskDto;
 import ru.bicev.TaskTracker.entity.Task;
 import ru.bicev.TaskTracker.entity.User;
+import ru.bicev.TaskTracker.repo.UserRepository;
+import ru.bicev.TaskTracker.exceptions.UserNotFoundException;
 
 public class TaskMapper {
 
