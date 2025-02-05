@@ -1,6 +1,5 @@
 package ru.bicev.TaskTracker.service;
 
-import java.nio.file.AccessDeniedException;
 import java.security.Principal;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,9 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import ru.bicev.TaskTracker.dto.UserDto;
 import ru.bicev.TaskTracker.entity.User;
+import ru.bicev.TaskTracker.exceptions.AccessDeniedException;
+import ru.bicev.TaskTracker.exceptions.DuplicateUserException;
+import ru.bicev.TaskTracker.exceptions.UserNotFoundException;
 import ru.bicev.TaskTracker.repo.UserRepository;
 import ru.bicev.TaskTracker.util.Role;
 import ru.bicev.TaskTracker.util.UserMapper;
@@ -29,6 +31,9 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public UserDto createUser(UserDto userDto) {
+        if (userRepository.existsByUsername(userDto.getUsername())) {
+            throw new DuplicateUserException("User with username " + userDto.getUsername() + " already exists");
+        }
         User user = UserMapper.fromDto(userDto);
         if (userDto.getRole() == null) {
             user.setRole(Role.USER);
@@ -42,8 +47,9 @@ public class BasicUserService implements UserService {
     @Transactional
     @Override
     public void deleteUser(Long userId, Principal principal) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User with id " + userId + " is not found"));
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException("User with id " + userId + " is not found");
+        }
 
         User currentUser = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("Current user not found"));
