@@ -10,7 +10,7 @@ import ru.bicev.TaskTracker.exceptions.UserNotFoundException;
 
 public class TaskMapper {
 
-    public static Task fromDto(TaskDto taskDto, UserRepository userRepo) {
+    public static Task fromDto(TaskDto taskDto) {
         Task task = new Task();
 
         if (taskDto.getId() != null) {
@@ -18,11 +18,6 @@ public class TaskMapper {
         }
         task.setTitle(taskDto.getTitle());
 
-        if (taskDto.getUserId() != null) {
-            User user = userRepo.findById(taskDto.getUserId())
-                .orElseThrow(() - new UserNotFoundException("User with id " + taskDto.getUserId() + " not found"));
-            task.setUser(user);
-        }
         task.setDescription(taskDto.getDescription());
         task.setCreatedAt(taskDto.getCreatedAt());
         task.setCompletedAt(taskDto.getCompletedAt());

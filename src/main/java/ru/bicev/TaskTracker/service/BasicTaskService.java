@@ -31,9 +31,13 @@ public class BasicTaskService implements TaskService {
 
     @Transactional
     @Override
-    public TaskDto createTask(TaskDto taskDto) {
-        Task task = taskRepository.save(TaskMapper.fromDto(taskDto, userRepository));
-        return TaskMapper.fromEntity(task);
+    public TaskDto createTask(TaskDto taskDto, Principal principal) {
+        User currentUser = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        Task task = TaskMapper.fromDto(taskDto);
+        task.setUser(currentUser);
+        Task createdTask = taskRepository.save(task);
+        return TaskMapper.fromEntity(createdTask);
     }
 
     @Transactional
@@ -51,9 +55,14 @@ public class BasicTaskService implements TaskService {
     }
 
     @Override
-    public TaskDto getTaskById(Long taskId) {
+    public TaskDto getTaskById(Long taskId, Principal principal) {
+        User currentUser = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " is not found"));
+        if (!validateUserAccess(currentUser, task)) {
+            throw new AccessDeniedException("You are not allowed to get this task");
+        }
         return TaskMapper.fromEntity(task);
     }
 
@@ -77,6 +86,7 @@ public class BasicTaskService implements TaskService {
         return TaskMapper.fromEntity(updatedTask);
     }
 
+    @Override
     public List<TaskDto> getTasksForCurrentUser(Principal principal) {
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
