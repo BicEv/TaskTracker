@@ -43,20 +43,6 @@ public class BasicTaskService implements TaskService {
         return TaskMapper.fromEntity(createdTask);
     }
 
-    @Transactional
-    @Override
-    public void deleteTask(Long taskId, Principal principal) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " is not found"));
-        User user = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        if (!validateUserAccess(user, task)) {
-            throw new AccessDeniedException("You are not allowed to delete this task");
-        }
-        taskRepository.deleteById(taskId);
-
-    }
-
     @Override
     public TaskDto getTaskById(Long taskId, Principal principal) {
         User currentUser = userRepository.findByUsername(principal.getName())
@@ -67,6 +53,17 @@ public class BasicTaskService implements TaskService {
             throw new AccessDeniedException("You are not allowed to get this task");
         }
         return TaskMapper.fromEntity(task);
+    }
+
+    @Override
+    public List<TaskDto> getTasksForCurrentUser(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return taskRepository.findTasksByUserId(user.getId())
+                .stream()
+                .map(TaskMapper::fromEntity)
+                .collect(Collectors.toList());
+
     }
 
     @Transactional
@@ -89,14 +86,17 @@ public class BasicTaskService implements TaskService {
         return TaskMapper.fromEntity(updatedTask);
     }
 
+    @Transactional
     @Override
-    public List<TaskDto> getTasksForCurrentUser(Principal principal) {
+    public void deleteTask(Long taskId, Principal principal) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " is not found"));
         User user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return taskRepository.findTasksByUserId(user.getId())
-                .stream()
-                .map(TaskMapper::fromEntity)
-                .collect(Collectors.toList());
+        if (!validateUserAccess(user, task)) {
+            throw new AccessDeniedException("You are not allowed to delete this task");
+        }
+        taskRepository.deleteById(taskId);
 
     }
 

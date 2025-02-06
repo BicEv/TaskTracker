@@ -44,23 +44,6 @@ public class BasicUserService implements UserService {
 
     }
 
-    @Transactional
-    @Override
-    public void deleteUser(Long userId, Principal principal) {
-        if (!userRepository.existsById(userId)) {
-            throw new UserNotFoundException("User with id " + userId + " is not found");
-        }
-
-        User currentUser = userRepository.findByUsername(principal.getName())
-                .orElseThrow(() -> new UserNotFoundException("Current user not found"));
-
-        if (!validateUserAccess(currentUser, userId)) {
-            throw new AccessDeniedException("You are not allowed to delete this user");
-        }
-
-        userRepository.deleteById(userId);
-    }
-
     @Override
     public UserDto getUserById(Long userId) {
         User user = userRepository.findById(userId)
@@ -95,6 +78,23 @@ public class BasicUserService implements UserService {
         user.setRole(Role.fromString(userDto.getRole()));
         User updatedUser = userRepository.save(user);
         return UserMapper.fromEntity(updatedUser);
+    }
+
+    @Transactional
+    @Override
+    public void deleteUser(Long userId, Principal principal) {
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException("User with id " + userId + " is not found");
+        }
+
+        User currentUser = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UserNotFoundException("Current user not found"));
+
+        if (!validateUserAccess(currentUser, userId)) {
+            throw new AccessDeniedException("You are not allowed to delete this user");
+        }
+
+        userRepository.deleteById(userId);
     }
 
     private boolean validateUserAccess(User currentUser, Long taskUserId) {
