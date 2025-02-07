@@ -44,7 +44,7 @@ public class UserRestCotroller {
         return ResponseEntity.ok().body(user);
     }
 
-    @GetMapping("/{username}")
+    @GetMapping("/username")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> getUserByUsername(@RequestParam String username) {
         UserDto user = userService.getUserByUsername(username);
