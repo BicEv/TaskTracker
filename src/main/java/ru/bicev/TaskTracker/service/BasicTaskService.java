@@ -1,6 +1,7 @@
 package ru.bicev.TaskTracker.service;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -79,9 +80,16 @@ public class BasicTaskService implements TaskService {
 
         task.setTitle(taskDto.getTitle());
         task.setDescription(taskDto.getDescription());
-        task.setCreatedAt(taskDto.getCreatedAt());
+        if (taskDto.getCreatedAt() != null) {
+            task.setCreatedAt(taskDto.getCreatedAt());
+        }
         task.setStatus(TaskStatus.fromString(taskDto.getStatus()));
-        task.setCompletedAt(taskDto.getCompletedAt());
+        if (taskDto.getStatus().equalsIgnoreCase("COMPLETED")) {
+            task.setCompletedAt(LocalDateTime.now());
+        } else if (taskDto.getCompletedAt() != null) {
+            task.setCompletedAt(taskDto.getCompletedAt());
+        }
+
         Task updatedTask = taskRepository.save(task);
         return TaskMapper.fromEntity(updatedTask);
     }
