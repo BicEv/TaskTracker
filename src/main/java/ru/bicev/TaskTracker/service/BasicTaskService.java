@@ -33,6 +33,8 @@ public class BasicTaskService implements TaskService {
         this.userRepository = userRepository;
     }
 
+    //To-Do: remove unnecessary UserNotFound bc Security configuration accepts only authorized Users
+
     @Transactional
     @Override
     public TaskDto createTask(TaskDto taskDto, Principal principal) {
