@@ -132,7 +132,7 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Update task 403")
     void updateTask403Test() throws Exception {
-        String updateJson = createTaskJson("Updated title", "Updated description", "COMPLETE");
+        String updateJson = createTaskJson("Updated title", "Updated description", "COMPLETED");
 
         mockMvc.perform(put("/api/tasks/1")
                 .with(httpBasic("testUser2", "password"))
@@ -144,7 +144,7 @@ public class TaskControllerTest {
     @Test
     @DisplayName("Update task 404")
     void updateTask404Test() throws Exception {
-        String updateJson = createTaskJson("Updated title", "Updated description", "COMPLETE");
+        String updateJson = createTaskJson("Updated title", "Updated description", "COMPLETED");
 
         mockMvc.perform(put("/api/tasks/15")
                 .with(httpBasic("testUser", "password"))
